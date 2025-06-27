@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mood Timeline"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#9C27B0"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- First entry -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:orientation="horizontal"
+            android:background="@drawable/timeline_entry_bg"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical"
+            android:layout_marginHorizontal="8dp">
+
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/coping"
+                android:contentDescription="Coping mood"
+                android:layout_marginEnd="16dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Managed to finish all tasks despite feeling tired. Coping well today."
+                android:textSize="14sp"
+                android:textColor="#333333" />
+        </LinearLayout>
+
+
+    <!-- Second entry -->
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:orientation="horizontal"
+        android:background="@drawable/timeline_entry_bg"
+        android:padding="12dp"
+        android:layout_marginBottom="12dp"
+        android:gravity="center_vertical"
+        android:layout_marginHorizontal="8dp">
+
+        <ImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/down"
+            android:contentDescription="Coping mood"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="I am hungry."
+            android:textSize="14sp"
+            android:textColor="#333333" />
+    </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
