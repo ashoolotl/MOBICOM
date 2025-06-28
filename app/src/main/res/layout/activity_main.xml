@@ -17,20 +17,71 @@
         android:text="@string/app_name"
         android:textColor="#FFFFFF"
         android:textSize="20sp"
-        android:textStyle="bold"
-    />
+        android:textStyle="bold" />
 
-    <!-- Empty space for main content -->
+    <!-- Main content placeholder -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical" />
 
-    <!-- Bottom bar -->
-    <View
+    <!-- Bottom bar with navigation buttons -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#6E2795" />
+        android:background="#6E2795"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="4">
+
+        <!-- Calendar Button -->
+        <ImageButton
+            android:id="@+id/btn_calendar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:src="@drawable/ic_calendar"
+            android:scaleType="centerInside"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/calendar_icon" />
+
+        <!-- Summary Button -->
+        <ImageButton
+            android:id="@+id/btn_summary"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:src="@drawable/ic_summary"
+            android:scaleType="centerInside"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/summary_icon" />
+
+        <!-- Timeline Button -->
+        <ImageButton
+            android:id="@+id/btn_timeline"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:src="@drawable/ic_timeline"
+            android:scaleType="centerInside"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/timeline_icon" />
+
+        <!-- Login Button -->
+        <ImageButton
+            android:id="@+id/btn_login"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:src="@drawable/ic_login"
+            android:scaleType="centerInside"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/login_icon" />
+    </LinearLayout>
 
 </LinearLayout>
