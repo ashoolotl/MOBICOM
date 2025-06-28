@@ -1,45 +1,53 @@
-// MainActivity.kt
 package com.mobicom.s17.mco2
 
-import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.FrameLayout
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.viewpager.widget.ViewPager
-import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var viewPager: ViewPager
-    private lateinit var tabLayout: TabLayout
-    private lateinit var floatingActionButton: FloatingActionButton
+    private lateinit var frame: FrameLayout
+    private lateinit var inflater: LayoutInflater
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)  // Ensure this points to the layout you provided
+        setContentView(R.layout.activity_main)
 
-        // Initialize views
-        viewPager = findViewById(R.id.view_pager)
-        tabLayout = findViewById(R.id.tabs)
-        floatingActionButton = findViewById(R.id.add_entry_button)
+        frame = findViewById(R.id.main_content_frame)
+        inflater = LayoutInflater.from(this)
 
-        // Setup ViewPager with an Adapter
-        val adapter = ViewPagerAdapter(supportFragmentManager)
-        viewPager.adapter = adapter
+        val btnCalendar: ImageButton = findViewById(R.id.btn_calendar)
+        val btnSummary: ImageButton = findViewById(R.id.btn_summary)
+        val btnTimeline: ImageButton = findViewById(R.id.btn_timeline)
+        val btnLogin: ImageButton = findViewById(R.id.btn_login)
+        val btnPost: ImageButton = findViewById(R.id.btn_post)
 
-        // Link ViewPager with TabLayout
-        tabLayout.setupWithViewPager(viewPager)
+        // Load default page on startup
+        switchPage(R.layout.activity_login)
 
-        // Handle Floating Action Button click
-        floatingActionButton.setOnClickListener {
-            // Perform action when FAB is clicked, like opening a new fragment or dialog
-            // For example, open a new fragment or activity
-            // val intent = Intent(this, SomeOtherActivity::class.java)
-            // startActivity(intent)
+        btnPost.setOnClickListener {
+            switchPage(R.layout.activity_enter_text)
+        }
+
+        btnCalendar.setOnClickListener {
+            switchPage(R.layout.calendar)
+        }
+        btnSummary.setOnClickListener {
+            switchPage(R.layout.summary)
+        }
+        btnTimeline.setOnClickListener {
+            switchPage(R.layout.timeline)
+        }
+        btnLogin.setOnClickListener {
+            switchPage(R.layout.activity_login)
         }
     }
 
-
+    private fun switchPage(layoutResId: Int) {
+        frame.removeAllViews()
+        val view = inflater.inflate(layoutResId, frame, false)
+        frame.addView(view)
+    }
 }
