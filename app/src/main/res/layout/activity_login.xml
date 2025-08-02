@@ -3,13 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_vertical"
-    android:background="#FFFFFF">
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
 
+    <!-- LOGIN FORM -->
     <LinearLayout
+        android:id="@+id/loginLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
         android:gravity="center_horizontal">
 
         <!-- Welcome text -->
@@ -18,9 +21,9 @@
             android:layout_height="wrap_content"
             android:text="Hi there!"
             android:textColor="#6E2795"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginTop="40dp"/>
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="40dp"/>
 
         <!-- Subtitle -->
         <TextView
@@ -28,13 +31,81 @@
             android:layout_height="wrap_content"
             android:text="Let's get you started"
             android:textColor="#6E2795"
-        android:textSize="16sp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="24dp"/>
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Email field -->
+        <EditText
+            android:id="@+id/loginEmailInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/input_bg"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#6E2795"/>
+
+        <!-- Password field -->
+        <EditText
+            android:id="@+id/loginPasswordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:background="@drawable/input_bg"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000"
+            android:textColorHint="#6E2795"/>
+
+        <!-- Login button -->
+        <Button
+            android:id="@+id/submitLoginButton"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="40dp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_button"/>
+
+        <!-- Show Register button -->
+        <Button
+            android:id="@+id/btnShowRegister"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Account"
+            android:background="@android:color/transparent"
+            android:textColor="@color/colorMagenta" />
+    </LinearLayout>
+
+    <!-- REGISTER FORM -->
+    <LinearLayout
+        android:id="@+id/registerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:visibility="gone">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Account"
+            android:textColor="#6E2795"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"
+            android:gravity="center" />
 
         <!-- Name field -->
         <EditText
-            android:id="@+id/nameInput"
+            android:id="@+id/regNameInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Name"
@@ -42,11 +113,11 @@
             android:padding="12dp"
             android:layout_marginBottom="12dp"
             android:textColor="#000000"
-            android:textColorHint="#6E2795"/>
+            android:textColorHint="#6E2795" />
 
         <!-- Age field -->
         <EditText
-            android:id="@+id/ageInput"
+            android:id="@+id/regAgeInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Age"
@@ -55,31 +126,54 @@
             android:padding="12dp"
             android:layout_marginBottom="12dp"
             android:textColor="#000000"
-            android:textColorHint="#6E2795"/>
+            android:textColorHint="#6E2795" />
 
-
-        <!-- Validation message -->
-        <TextView
-            android:id="@+id/errorText"
-            android:layout_width="wrap_content"
+        <!-- Email field -->
+        <EditText
+            android:id="@+id/regEmailInput"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="All fields must be filled up"
-            android:textColor="#D32F2F"
-            android:textSize="12sp"
-            android:layout_marginBottom="24dp"
-            android:visibility="gone"/>
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/input_bg"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#6E2795" />
 
-        <!-- Submit button -->
+        <!-- Password field -->
+        <EditText
+            android:id="@+id/regPasswordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:background="@drawable/input_bg"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000"
+            android:textColorHint="#6E2795" />
+
+        <!-- Register button -->
         <Button
-            android:id="@+id/submitButton"
+            android:id="@+id/registerButton"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="All Done"
+            android:text="Register"
             android:textColor="#FFFFFF"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="40dp"
             android:padding="12dp"
-            android:background="@drawable/rounded_button"/>
+            android:background="@drawable/rounded_button" />
 
+        <!-- Back to login -->
+        <Button
+            android:id="@+id/btnBackToLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back to Login"
+            android:background="@android:color/transparent"
+            android:textColor="@color/colorMagenta"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
+
 </LinearLayout>

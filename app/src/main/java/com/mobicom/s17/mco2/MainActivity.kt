@@ -2,8 +2,11 @@ package com.mobicom.s17.mco2
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
@@ -24,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         val btnLogin: ImageButton = findViewById(R.id.btn_login)
         val btnPost: ImageButton = findViewById(R.id.btn_post)
 
-        // Load default page on startup
+        // Load startup page as default
         switchPage(R.layout.activity_login)
 
         btnPost.setOnClickListener {
@@ -49,5 +52,38 @@ class MainActivity : AppCompatActivity() {
         frame.removeAllViews()
         val view = inflater.inflate(layoutResId, frame, false)
         frame.addView(view)
+
+        if (layoutResId == R.layout.activity_login) {
+            // Toggle between login and register forms
+            val loginLayout = view.findViewById<LinearLayout>(R.id.loginLayout)
+            val registerLayout = view.findViewById<LinearLayout>(R.id.registerLayout)
+
+            val btnLogin = view.findViewById<Button>(R.id.submitLoginButton)
+            val btnShowRegister = view.findViewById<Button>(R.id.btnShowRegister)
+            val btnRegister = view.findViewById<Button>(R.id.registerButton)
+            val btnBackToLogin = view.findViewById<Button>(R.id.btnBackToLogin)
+
+            // Login button -> Timeline
+            btnLogin.setOnClickListener {
+                switchPage(R.layout.timeline)
+            }
+
+            // Show Register form
+            btnShowRegister.setOnClickListener {
+                loginLayout.visibility = View.GONE
+                registerLayout.visibility = View.VISIBLE
+            }
+
+            // Back to login form
+            btnBackToLogin.setOnClickListener {
+                registerLayout.visibility = View.GONE
+                loginLayout.visibility = View.VISIBLE
+            }
+
+            // Register button -> Timeline
+            btnRegister.setOnClickListener {
+                switchPage(R.layout.timeline)
+            }
+        }
     }
 }
