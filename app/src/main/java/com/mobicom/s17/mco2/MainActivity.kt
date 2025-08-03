@@ -1,25 +1,15 @@
 package com.mobicom.s17.mco2
 
-import android.content.Intent
+import android.app.DatePickerDialog
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.GridLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import android.app.DatePickerDialog
-import android.widget.EditText
-import android.widget.Toast
-import android.graphics.Color
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var inflater: LayoutInflater
     private var currentUserEmail: String? = null  // Track the logged-in user
 
-    // Calendar-related variables
+    // Calendar variables
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var calendarGrid: GridLayout
     private lateinit var headerText: TextView
@@ -35,6 +25,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nextButton: Button
     private var currentMonth: Int = 0
     private var currentYear: Int = 0
+
+    // Summary variables
+    private lateinit var upsetCount: TextView
+    private lateinit var downCount: TextView
+    private lateinit var neutralCount: TextView
+    private lateinit var copingCount: TextView
+    private lateinit var elatedCount: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,34 +41,31 @@ class MainActivity : AppCompatActivity() {
         inflater = LayoutInflater.from(this)
         dbHelper = DatabaseHelper(this)
 
+        // Run DB schema check (for upgrades)
+        checkAndMigrateDatabase()
+
         val btnCalendar: ImageButton = findViewById(R.id.btn_calendar)
         val btnSummary: ImageButton = findViewById(R.id.btn_summary)
         val btnTimeline: ImageButton = findViewById(R.id.btn_timeline)
         val btnLogin: ImageButton = findViewById(R.id.btn_login)
         val btnPost: ImageButton = findViewById(R.id.btn_post)
 
-        // Load startup page as default
+        // Default page
         switchPage(R.layout.activity_login)
 
         btnPost.setOnClickListener {
             switchPage(R.layout.activity_enter_text)
         }
-
-        // Switch to calendar view in the main frame
         btnCalendar.setOnClickListener {
             switchPage(R.layout.calendar)
         }
-
         btnSummary.setOnClickListener {
             switchPage(R.layout.summary)
         }
-
         btnTimeline.setOnClickListener {
             switchPage(R.layout.timeline)
         }
-
         btnLogin.setOnClickListener {
-            // If logged in, go to profile, else show login page
             if (currentUserEmail != null) {
                 switchPage(R.layout.profile)
             } else {
@@ -97,7 +91,6 @@ class MainActivity : AppCompatActivity() {
             val btnRegister = view.findViewById<Button>(R.id.registerButton)
             val btnBackToLogin = view.findViewById<Button>(R.id.btnBackToLogin)
 
-            // Birthday date picker
             val birthdayInput = view.findViewById<EditText>(R.id.regBirthdayInput)
             birthdayInput.setOnClickListener {
                 val calendar = Calendar.getInstance()
@@ -106,8 +99,7 @@ class MainActivity : AppCompatActivity() {
                 val day = calendar.get(Calendar.DAY_OF_MONTH)
 
                 val datePicker = DatePickerDialog(this, { _, y, m, d ->
-                    val formattedDate = "${m + 1}/$d/$y"
-                    birthdayInput.setText(formattedDate)
+                    birthdayInput.setText("${m + 1}/$d/$y")
                 }, year, month, day)
                 datePicker.datePicker.maxDate = System.currentTimeMillis()
                 datePicker.show()
@@ -159,18 +151,14 @@ class MainActivity : AppCompatActivity() {
             val btnEditProfile = view.findViewById<Button>(R.id.btnEditProfile)
             val btnCancelEdit = view.findViewById<Button>(R.id.btnCancelEdit)
 
-            // Load user data
             val user = dbHelper.getUserByEmail(currentUserEmail!!)
             if (user != null) {
                 nameField.setText(user.name)
                 birthdayField.setText(user.birthday)
                 emailField.setText(user.email)
-
-                val age = dbHelper.calculateAge(user.birthday)
-                ageField.setText(age.toString())
+                ageField.setText(dbHelper.calculateAge(user.birthday).toString())
             }
 
-            // Birthday DatePicker when editing
             birthdayField.setOnClickListener {
                 if (birthdayField.isEnabled) {
                     val calendar = Calendar.getInstance()
@@ -188,23 +176,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Edit/Save functionality
             btnEditProfile.setOnClickListener {
                 if (btnEditProfile.text == "Edit Profile") {
-                    // Enable editing
                     nameField.isEnabled = true
                     birthdayField.isEnabled = true
-                    emailField.isEnabled = false // Email stays locked
+                    emailField.isEnabled = false
                     btnEditProfile.text = "Save"
                     btnCancelEdit.visibility = View.VISIBLE
                 } else {
-                    // Save changes
                     val updatedName = nameField.text.toString()
                     val updatedBirthday = birthdayField.text.toString()
 
                     if (dbHelper.updateUser(updatedName, updatedBirthday, currentUserEmail!!)) {
                         Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show()
-
                         nameField.isEnabled = false
                         birthdayField.isEnabled = false
                         btnEditProfile.text = "Edit Profile"
@@ -215,20 +199,37 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Cancel button
             btnCancelEdit.setOnClickListener {
                 if (user != null) {
                     nameField.setText(user.name)
                     birthdayField.setText(user.birthday)
-                    val age = dbHelper.calculateAge(user.birthday)
-                    ageField.setText(age.toString())
+                    ageField.setText(dbHelper.calculateAge(user.birthday).toString())
                 }
-
                 nameField.isEnabled = false
                 birthdayField.isEnabled = false
                 btnEditProfile.text = "Edit Profile"
                 btnCancelEdit.visibility = View.GONE
             }
+        }
+
+        // Summary page
+        if (layoutResId == R.layout.summary) {
+            upsetCount = view.findViewById(R.id.upsetCount)
+            downCount = view.findViewById(R.id.downCount)
+            neutralCount = view.findViewById(R.id.neutralCount)
+            copingCount = view.findViewById(R.id.copingCount)
+            elatedCount = view.findViewById(R.id.elatedCount)
+
+            val moodCounts = dbHelper.getMoodCounts()
+
+            upsetCount.text = (moodCounts["Upset"] ?: 0).toString()
+            downCount.text = (moodCounts["Down"] ?: 0).toString()
+            neutralCount.text = (moodCounts["Neutral"] ?: 0).toString()
+            copingCount.text = (moodCounts["Coping"] ?: 0).toString()
+            elatedCount.text = (moodCounts["Elated"] ?: 0).toString()
+
+            val barChart = view.findViewById<BarChart>(R.id.customBarChart)
+            barChart.setData(moodCounts)
         }
 
         // Calendar page
@@ -238,12 +239,10 @@ class MainActivity : AppCompatActivity() {
             prevButton = view.findViewById(R.id.btn_prev_month)
             nextButton = view.findViewById(R.id.btn_next_month)
 
-            // Initialize calendar to current month
             val cal = Calendar.getInstance()
             currentMonth = cal.get(Calendar.MONTH)
             currentYear = cal.get(Calendar.YEAR)
 
-            // Set up navigation buttons
             prevButton.setOnClickListener {
                 if (currentMonth == 0) {
                     currentMonth = 11
@@ -269,41 +268,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateCalendar() {
-        // Update header
         val cal = Calendar.getInstance()
         cal.set(Calendar.MONTH, currentMonth)
         cal.set(Calendar.YEAR, currentYear)
         val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         headerText.text = sdf.format(cal.time)
 
-        // Clear previous views
         calendarGrid.removeAllViews()
-
-        // Get first day of month and number of days
         cal.set(Calendar.DAY_OF_MONTH, 1)
-        val firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sun
+        val firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1
         val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-        // Fetch moods by date
         val moodsByDate = dbHelper.getMoodsByDate()
         val monthStr = String.format("%02d", currentMonth + 1)
         val yearStr = currentYear.toString()
 
-        // Fill grid
-        val totalCells = 42 // 7x6
+        val moodColors = mapOf(
+            "upset" to Color.GRAY,
+            "down" to Color.BLUE,
+            "neutral" to Color.GREEN,
+            "coping" to Color.rgb(255, 165, 0), // Orange
+            "elated" to Color.RED
+        )
+
+        val totalCells = 42
         for (i in 0 until totalCells) {
             val dayNum = i - firstDayOfWeek + 1
             val dayView = TextView(this)
 
-            // Use GridLayout.LayoutParams to properly distribute cells
             val layoutParams = GridLayout.LayoutParams()
             layoutParams.width = 0
-            layoutParams.height = 80.dp // Increased height to accommodate mood text
+            layoutParams.height = 80.dp
             layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
             dayView.layoutParams = layoutParams
 
             dayView.gravity = Gravity.CENTER
-            dayView.textSize = 12f // Smaller text to fit both day and mood
+            dayView.textSize = 12f
             dayView.setTextColor(Color.parseColor("#6E2795"))
             dayView.setPadding(4, 4, 4, 4)
 
@@ -311,20 +311,17 @@ class MainActivity : AppCompatActivity() {
                 val dateKey = "$monthStr/${String.format("%02d", dayNum)}/$yearStr"
                 val mood = moodsByDate[dateKey]
 
-                // Set text to show both day number and mood (if any)
                 dayView.text = if (mood != null) {
                     "$dayNum\n$mood"
                 } else {
                     dayNum.toString()
                 }
 
-                // Set background color based on mood
-                when (mood) {
-                    "happy" -> dayView.setBackgroundColor(Color.parseColor("#FFD700"))
-                    "sad" -> dayView.setBackgroundColor(Color.parseColor("#1E90FF"))
-                    "angry" -> dayView.setBackgroundColor(Color.parseColor("#FF4500"))
-                    "calm" -> dayView.setBackgroundColor(Color.parseColor("#90EE90"))
-                    else -> dayView.setBackgroundColor(Color.parseColor("#F0F0F0"))
+                val moodKey = mood?.lowercase(Locale.getDefault())
+                if (moodKey != null && moodColors.containsKey(moodKey)) {
+                    dayView.setBackgroundColor(moodColors[moodKey]!!)
+                } else {
+                    dayView.setBackgroundColor(Color.parseColor("#F0F0F0"))
                 }
             } else {
                 dayView.text = ""
@@ -334,6 +331,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Extension property for dp to px
+    // Checks if new columns need to be added without dropping the table
+    private fun checkAndMigrateDatabase() {
+        val db = dbHelper.writableDatabase
+        val cursor = db.rawQuery("PRAGMA table_info(moods)", null)
+        var columnExists = false
+        while (cursor.moveToNext()) {
+            val columnName = cursor.getString(1)
+            if (columnName == "extra_info") {
+                columnExists = true
+                break
+            }
+        }
+        cursor.close()
+
+        if (!columnExists) {
+            db.execSQL("ALTER TABLE moods ADD COLUMN extra_info TEXT DEFAULT ''")
+        }
+    }
+
     private val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
 }
