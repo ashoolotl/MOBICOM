@@ -21,5 +21,6 @@
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
+        <!-- Mood items will be dynamically added here from MainActivity -->
     </LinearLayout>
 </ScrollView>
