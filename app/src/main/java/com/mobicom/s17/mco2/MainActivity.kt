@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Profile
+        // Profile + Logout Button
         if (layoutResId == R.layout.profile && currentUserEmail != null) {
             val nameField = view.findViewById<EditText>(R.id.profileName)
             val birthdayField = view.findViewById<EditText>(R.id.profileBirthday)
@@ -144,6 +144,20 @@ class MainActivity : AppCompatActivity() {
             val emailField = view.findViewById<EditText>(R.id.profileEmail)
             val btnEditProfile = view.findViewById<Button>(R.id.btnEditProfile)
             val btnCancelEdit = view.findViewById<Button>(R.id.btnCancelEdit)
+
+            // Add logout button programmatically if not in XML
+            val btnLogout = Button(this).apply {
+                text = "Logout"
+                setBackgroundResource(R.drawable.rounded_button)
+                setTextColor(Color.WHITE)
+                setOnClickListener {
+                    currentUserEmail = null
+                    Toast.makeText(this@MainActivity, "Logged out!", Toast.LENGTH_SHORT).show()
+                    switchPage(R.layout.activity_login)
+                }
+            }
+            // Add at the bottom of profile layout
+            (view as LinearLayout).addView(btnLogout)
 
             val user = dbHelper.getUserByEmail(currentUserEmail!!)
             if (user != null) {
