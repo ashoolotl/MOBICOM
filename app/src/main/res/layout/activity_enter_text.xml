@@ -1,85 +1,215 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FDF3FF">
 
-    <TextView
-        android:text="How are you feeling today?"
-        android:textSize="20sp"
-        android:layout_marginBottom="20dp"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <GridLayout
-        android:id="@+id/moodGrid"
-        android:columnCount="5"
+    <!-- TOP NAVBAR -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
+        android:background="#6E2795"
         android:gravity="center">
 
-        <ImageButton
-            android:id="@+id/btnUpset"
-            android:src="@drawable/upset"
-            android:background="@drawable/mood_selector_bg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Upset" />
+        <TextView
+            android:id="@+id/topTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VibeMate"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btnDown"
-            android:src="@drawable/down"
-            android:background="@drawable/mood_selector_bg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Down" />
-
-        <ImageButton
-            android:id="@+id/btnNeutral"
-            android:src="@drawable/neutral"
-            android:background="@drawable/mood_selector_bg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Neutral" />
-
-        <ImageButton
-            android:id="@+id/btnCoping"
-            android:src="@drawable/coping"
-            android:background="@drawable/mood_selector_bg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Coping" />
-
-        <ImageButton
-            android:id="@+id/btnElated"
-            android:src="@drawable/elated"
-            android:background="@drawable/mood_selector_bg"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Elated" />
-
-    </GridLayout>
-
-    <EditText
-        android:id="@+id/inputNote"
-        android:hint="Add a note (optional)"
-        android:layout_marginTop="20dp"
+    <!-- Main Content -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
 
-    <Button
-        android:id="@+id/btnSaveMood"
-        android:text="Save"
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/moodQuestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="How are you feeling today?"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="16dp" />
 
+        <LinearLayout
+            android:id="@+id/moodOptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:id="@+id/mood_upset"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/upset"
+                android:background="@drawable/mood_selector_bg"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <ImageView
+                android:id="@+id/mood_down"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/down"
+                android:background="@drawable/mood_selector_bg"
+                android:padding="8dp"
+                android:layout_marginStart="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <ImageView
+                android:id="@+id/mood_neutral"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/neutral"
+                android:background="@drawable/mood_selector_bg"
+                android:padding="8dp"
+                android:layout_marginStart="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <ImageView
+                android:id="@+id/mood_coping"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/coping"
+                android:background="@drawable/mood_selector_bg"
+                android:padding="8dp"
+                android:layout_marginStart="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <ImageView
+                android:id="@+id/mood_elated"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/elated"
+                android:background="@drawable/mood_selector_bg"
+                android:padding="8dp"
+                android:layout_marginStart="12dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/noteInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Add a note (optional)"
+            android:background="@drawable/rounded_edittext"
+            android:padding="10dp"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:background="@drawable/rounded_button"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Bottom NAVBAR -->
+    <LinearLayout
+        android:id="@+id/navbar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#6E2795"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_post"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_post"
+                android:scaleType="fitCenter"
+                android:tint="#000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_calendar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_calendar"
+                android:scaleType="fitCenter"
+                android:tint="#000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_summary"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_summary"
+                android:scaleType="fitCenter"
+                android:tint="#000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_timeline"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_timeline"
+                android:scaleType="fitCenter"
+                android:tint="#000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_login"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_login"
+                android:scaleType="fitCenter"
+                android:tint="#000000" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>
