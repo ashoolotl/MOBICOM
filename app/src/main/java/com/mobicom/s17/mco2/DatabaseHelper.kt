@@ -4,74 +4,74 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import java.text.SimpleDateFormat
 import java.util.*
 
-class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DatabaseHelper(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "VibeMate.db"
         private const val DATABASE_VERSION = 2
 
-        private const val TABLE_USERS = "users"
-        private const val COL_ID = "id"
-        private const val COL_NAME = "name"
-        private const val COL_BIRTHDAY = "birthday"
-        private const val COL_EMAIL = "email"
-        private const val COL_PASSWORD = "password"
+        // Users table
+        const val TABLE_USERS = "users"
+        const val COLUMN_USER_ID = "id"
+        const val COLUMN_USER_NAME = "name"
+        const val COLUMN_USER_BIRTHDAY = "birthday"
+        const val COLUMN_USER_EMAIL = "email"
+        const val COLUMN_USER_PASSWORD = "password"
 
-        private const val TABLE_MOODS = "moods"
+        // Moods table
+        const val TABLE_MOODS = "moods"
+        const val COLUMN_MOOD_ID = "id"
+        const val COLUMN_MOOD = "mood"
+        const val COLUMN_NOTE = "note"
+        const val COLUMN_DATE = "date"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        val createUsersTable = ("CREATE TABLE $TABLE_USERS ("
-                + "$COL_ID INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "$COL_NAME TEXT, "
-                + "$COL_BIRTHDAY TEXT, "
-                + "$COL_EMAIL TEXT UNIQUE, "
-                + "$COL_PASSWORD TEXT)")
-        db.execSQL(createUsersTable)
+        db.execSQL(
+            """CREATE TABLE $TABLE_USERS (
+                $COLUMN_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COLUMN_USER_NAME TEXT,
+                $COLUMN_USER_BIRTHDAY TEXT,
+                $COLUMN_USER_EMAIL TEXT UNIQUE,
+                $COLUMN_USER_PASSWORD TEXT
+            )"""
+        )
 
-        val createMoodsTable = ("CREATE TABLE $TABLE_MOODS ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "mood TEXT, "
-                + "note TEXT, "
-                + "date TEXT)")
-        db.execSQL(createMoodsTable)
+        db.execSQL(
+            """CREATE TABLE $TABLE_MOODS (
+                $COLUMN_MOOD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COLUMN_MOOD TEXT,
+                $COLUMN_NOTE TEXT,
+                $COLUMN_DATE TEXT
+            )"""
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_USERS")
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_MOODS")
-        onCreate(db)
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE $TABLE_MOODS ADD COLUMN extra_info TEXT DEFAULT ''")
+        }
     }
 
-    // Insert user
+    // ---------------- USERS ----------------
     fun insertUser(name: String, birthday: String, email: String, password: String): Boolean {
         val db = writableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS WHERE $COL_EMAIL = ?", arrayOf(email))
-        if (cursor.count > 0) {
-            cursor.close()
-            return false
-        }
-        cursor.close()
-
         val values = ContentValues().apply {
-            put(COL_NAME, name)
-            put(COL_BIRTHDAY, birthday)
-            put(COL_EMAIL, email)
-            put(COL_PASSWORD, password)
+            put(COLUMN_USER_NAME, name)
+            put(COLUMN_USER_BIRTHDAY, birthday)
+            put(COLUMN_USER_EMAIL, email)
+            put(COLUMN_USER_PASSWORD, password)
         }
-
-        val result = db.insert(TABLE_USERS, null, values)
-        return result != -1L
+        return db.insert(TABLE_USERS, null, values) > 0
     }
 
-    // Authenticate user login
     fun authenticateUser(email: String, password: String): Boolean {
         val db = readableDatabase
         val cursor = db.rawQuery(
-            "SELECT * FROM $TABLE_USERS WHERE $COL_EMAIL = ? AND $COL_PASSWORD = ?",
+            "SELECT * FROM $TABLE_USERS WHERE $COLUMN_USER_EMAIL=? AND $COLUMN_USER_PASSWORD=?",
             arrayOf(email, password)
         )
         val exists = cursor.count > 0
@@ -79,17 +79,19 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return exists
     }
 
-    // Fetch user by email
     fun getUserByEmail(email: String): User? {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS WHERE $COL_EMAIL = ?", arrayOf(email))
-
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_USERS WHERE $COLUMN_USER_EMAIL=?",
+            arrayOf(email)
+        )
         var user: User? = null
         if (cursor.moveToFirst()) {
-            val name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME))
-            val birthday = cursor.getString(cursor.getColumnIndexOrThrow(COL_BIRTHDAY))
-            val userEmail = cursor.getString(cursor.getColumnIndexOrThrow(COL_EMAIL))
-            user = User(name, birthday, userEmail)
+            user = User(
+                name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_NAME)),
+                birthday = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_BIRTHDAY)),
+                email = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_EMAIL))
+            )
         }
         cursor.close()
         return user
@@ -98,120 +100,81 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun updateUser(name: String, birthday: String, email: String): Boolean {
         val db = writableDatabase
         val values = ContentValues().apply {
-            put(COL_NAME, name)
-            put(COL_BIRTHDAY, birthday)
+            put(COLUMN_USER_NAME, name)
+            put(COLUMN_USER_BIRTHDAY, birthday)
         }
-        val result = db.update(TABLE_USERS, values, "$COL_EMAIL = ?", arrayOf(email))
-        return result > 0
+        return db.update(TABLE_USERS, values, "$COLUMN_USER_EMAIL=?", arrayOf(email)) > 0
     }
 
     fun calculateAge(birthday: String): Int {
-        return try {
-            val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-            val dob = sdf.parse(birthday)
-            val today = Calendar.getInstance()
-            val dobCal = Calendar.getInstance()
-            dobCal.time = dob!!
-            var age = today.get(Calendar.YEAR) - dobCal.get(Calendar.YEAR)
-            if (today.get(Calendar.DAY_OF_YEAR) < dobCal.get(Calendar.DAY_OF_YEAR)) age--
-            age
-        } catch (e: Exception) {
-            0
-        }
+        val parts = birthday.split("/")
+        if (parts.size != 3) return 0
+        val birthYear = parts[2].toIntOrNull() ?: return 0
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        return currentYear - birthYear
     }
 
-    // Mood handling
+    // ---------------- MOODS ----------------
     fun insertMood(mood: String, note: String, date: String): Boolean {
         val db = writableDatabase
         val values = ContentValues().apply {
-            put("mood", mood)
-            put("note", note)
-            put("date", date)
+            put(COLUMN_MOOD, mood)
+            put(COLUMN_NOTE, note)
+            put(COLUMN_DATE, date)
         }
-        val result = db.insert(TABLE_MOODS, null, values)
-        return result != -1L
+        return db.insert(TABLE_MOODS, null, values) > 0
     }
 
-    fun getMoodCounts(): Map<String, Int> {
-        val db = readableDatabase
-        val moodCounts = mutableMapOf<String, Int>()
-        val cursor = db.rawQuery("SELECT mood, COUNT(*) as count FROM $TABLE_MOODS GROUP BY mood", null)
-
-        if (cursor.moveToFirst()) {
-            do {
-                val mood = cursor.getString(cursor.getColumnIndexOrThrow("mood"))
-                val count = cursor.getInt(cursor.getColumnIndexOrThrow("count"))
-                if (count > 0) moodCounts[mood] = count
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return moodCounts
-    }
-
-    fun getMoodsByDate(): Map<String, String> {
-        val db = readableDatabase
-        val moodsByDate = mutableMapOf<String, String>()
-        val cursor = db.rawQuery("SELECT date, mood FROM $TABLE_MOODS", null)
-        if (cursor.moveToFirst()) {
-            do {
-                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                val mood = cursor.getString(cursor.getColumnIndexOrThrow("mood"))
-                moodsByDate[date] = mood
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return moodsByDate
-    }
-
-    // Update mood by date
-    fun updateMoodByDate(date: String, mood: String, note: String): Boolean {
+    fun updateMood(id: Int, mood: String, note: String): Boolean {
         val db = writableDatabase
         val values = ContentValues().apply {
-            put("mood", mood)
-            put("note", note)
+            put(COLUMN_MOOD, mood)
+            put(COLUMN_NOTE, note)
         }
-        val result = db.update(TABLE_MOODS, values, "date = ?", arrayOf(date))
-        return result > 0
+        return db.update(TABLE_MOODS, values, "$COLUMN_MOOD_ID=?", arrayOf(id.toString())) > 0
     }
 
-    // Delete mood by date
-    fun deleteMoodByDate(date: String): Boolean {
+    fun deleteMood(id: Int): Boolean {
         val db = writableDatabase
-        val result = db.delete(TABLE_MOODS, "date = ?", arrayOf(date))
-        return result > 0
+        return db.delete(TABLE_MOODS, "$COLUMN_MOOD_ID=?", arrayOf(id.toString())) > 0
     }
 
-
-    // Get all moods for timeline
-    fun getAllMoods(): List<MoodEntry> {
+    fun getMoodsByDate(): Map<String, MoodEntry> {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MOODS ORDER BY date DESC", null)
-        val moods = mutableListOf<MoodEntry>()
-
+        val moods = mutableMapOf<String, MoodEntry>()
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_MOODS", null)
         if (cursor.moveToFirst()) {
             do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-                val mood = cursor.getString(cursor.getColumnIndexOrThrow("mood"))
-                val note = cursor.getString(cursor.getColumnIndexOrThrow("note"))
-                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                moods.add(MoodEntry(id, mood, note, date))
+                val date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE))
+                val mood = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MOOD))
+                val note = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOTE))
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MOOD_ID))
+                moods[date] = MoodEntry(id, mood, note)
             } while (cursor.moveToNext())
         }
         cursor.close()
         return moods
     }
+
+    fun getMoodCounts(): Map<String, Int> {
+        val db = readableDatabase
+        val moodCounts = mutableMapOf<String, Int>()
+        val cursor = db.rawQuery(
+            "SELECT $COLUMN_MOOD, COUNT(*) FROM $TABLE_MOODS GROUP BY $COLUMN_MOOD",
+            null
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                val mood = cursor.getString(0)
+                val count = cursor.getInt(1)
+                moodCounts[mood] = count
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return moodCounts
+    }
 }
 
-data class User(
-    val name: String,
-    val birthday: String,
-    val email: String
-)
-
-
-data class MoodEntry(
-    val id: Int,
-    val mood: String,
-    val note: String,
-    val date: String
-)
+// Models
+data class User(val name: String, val birthday: String, val email: String)
+data class MoodEntry(val id: Int, val mood: String, val note: String)

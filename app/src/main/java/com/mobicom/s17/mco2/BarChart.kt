@@ -59,3 +59,4 @@ class BarChart(context: Context, attrs: AttributeSet? = null) : View(context, at
         }
     }
 }
+

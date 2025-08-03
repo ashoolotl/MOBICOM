@@ -1,5 +1,6 @@
 package com.mobicom.s17.mco2
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Color
@@ -16,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var frame: FrameLayout
     private lateinit var inflater: LayoutInflater
-    private var currentUserEmail: String? = null  // Track the logged-in user
+    private var currentUserEmail: String? = null
 
     // Calendar variables
     private lateinit var dbHelper: DatabaseHelper
@@ -42,16 +43,7 @@ class MainActivity : AppCompatActivity() {
         inflater = LayoutInflater.from(this)
         dbHelper = DatabaseHelper(this)
 
-        // Check user session on startup
-        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
-        currentUserEmail = sharedPref.getString("current_user_email", null)
-
-        // Default page or refresh after saving a mood
-        if (currentUserEmail != null) {
-            switchPage(R.layout.timeline)
-        } else {
-            switchPage(R.layout.activity_login)
-        }
+        checkAndMigrateDatabase()
 
         val btnCalendar: ImageButton = findViewById(R.id.btn_calendar)
         val btnSummary: ImageButton = findViewById(R.id.btn_summary)
@@ -59,23 +51,19 @@ class MainActivity : AppCompatActivity() {
         val btnLogin: ImageButton = findViewById(R.id.btn_login)
         val btnPost: ImageButton = findViewById(R.id.btn_post)
 
+        if (intent.getBooleanExtra("REFRESH_DATA", false)) {
+            switchPage(R.layout.timeline)
+        } else {
+            switchPage(R.layout.activity_login)
+        }
+
         btnPost.setOnClickListener {
             val intent = Intent(this, ActivityEnterText::class.java)
             startActivity(intent)
         }
-
-        btnCalendar.setOnClickListener {
-            switchPage(R.layout.calendar)
-        }
-
-        btnSummary.setOnClickListener {
-            switchPage(R.layout.summary)
-        }
-
-        btnTimeline.setOnClickListener {
-            switchPage(R.layout.timeline)
-        }
-
+        btnCalendar.setOnClickListener { switchPage(R.layout.calendar) }
+        btnSummary.setOnClickListener { switchPage(R.layout.summary) }
+        btnTimeline.setOnClickListener { switchPage(R.layout.timeline) }
         btnLogin.setOnClickListener {
             if (currentUserEmail != null) {
                 switchPage(R.layout.profile)
@@ -92,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
         val dbHelper = DatabaseHelper(this)
 
-        // Login/Register page
+        // Login/Register
         if (layoutResId == R.layout.activity_login) {
             val loginLayout = view.findViewById<LinearLayout>(R.id.loginLayout)
             val registerLayout = view.findViewById<LinearLayout>(R.id.registerLayout)
@@ -105,13 +93,9 @@ class MainActivity : AppCompatActivity() {
             val birthdayInput = view.findViewById<EditText>(R.id.regBirthdayInput)
             birthdayInput.setOnClickListener {
                 val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-
                 val datePicker = DatePickerDialog(this, { _, y, m, d ->
                     birthdayInput.setText("${m + 1}/$d/$y")
-                }, year, month, day)
+                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
                 datePicker.datePicker.maxDate = System.currentTimeMillis()
                 datePicker.show()
             }
@@ -120,7 +104,6 @@ class MainActivity : AppCompatActivity() {
                 loginLayout.visibility = View.GONE
                 registerLayout.visibility = View.VISIBLE
             }
-
             btnBackToLogin.setOnClickListener {
                 registerLayout.visibility = View.GONE
                 loginLayout.visibility = View.VISIBLE
@@ -134,12 +117,6 @@ class MainActivity : AppCompatActivity() {
 
                 if (dbHelper.insertUser(name, birthday, email, password)) {
                     currentUserEmail = email
-                    // Save the logged-in user email in SharedPreferences
-                    val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        putString("current_user_email", email)
-                        apply()
-                    }
                     switchPage(R.layout.timeline)
                 } else {
                     Toast.makeText(this, "Error: Email already exists!", Toast.LENGTH_SHORT).show()
@@ -152,12 +129,6 @@ class MainActivity : AppCompatActivity() {
 
                 if (dbHelper.authenticateUser(email, password)) {
                     currentUserEmail = email
-                    // Save the logged-in user email in SharedPreferences
-                    val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        putString("current_user_email", email)
-                        apply()
-                    }
                     switchPage(R.layout.timeline)
                 } else {
                     Toast.makeText(this, "Invalid login credentials!", Toast.LENGTH_SHORT).show()
@@ -165,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Profile page
+        // Profile
         if (layoutResId == R.layout.profile && currentUserEmail != null) {
             val nameField = view.findViewById<EditText>(R.id.profileName)
             val birthdayField = view.findViewById<EditText>(R.id.profileBirthday)
@@ -185,15 +156,11 @@ class MainActivity : AppCompatActivity() {
             birthdayField.setOnClickListener {
                 if (birthdayField.isEnabled) {
                     val calendar = Calendar.getInstance()
-                    val year = calendar.get(Calendar.YEAR)
-                    val month = calendar.get(Calendar.MONTH)
-                    val day = calendar.get(Calendar.DAY_OF_MONTH)
-
                     val datePicker = DatePickerDialog(this, { _, y, m, d ->
                         val formattedDate = "${m + 1}/$d/$y"
                         birthdayField.setText(formattedDate)
                         ageField.setText(dbHelper.calculateAge(formattedDate).toString())
-                    }, year, month, day)
+                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
                     datePicker.datePicker.maxDate = System.currentTimeMillis()
                     datePicker.show()
                 }
@@ -235,7 +202,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Summary page
+        // Summary
         if (layoutResId == R.layout.summary) {
             upsetCount = view.findViewById(R.id.upsetCount)
             downCount = view.findViewById(R.id.downCount)
@@ -244,7 +211,6 @@ class MainActivity : AppCompatActivity() {
             elatedCount = view.findViewById(R.id.elatedCount)
 
             val moodCounts = dbHelper.getMoodCounts()
-
             upsetCount.text = (moodCounts["Upset"] ?: 0).toString()
             downCount.text = (moodCounts["Down"] ?: 0).toString()
             neutralCount.text = (moodCounts["Neutral"] ?: 0).toString()
@@ -255,7 +221,7 @@ class MainActivity : AppCompatActivity() {
             barChart.setData(moodCounts)
         }
 
-        // Calendar page
+        // Calendar
         if (layoutResId == R.layout.calendar) {
             calendarGrid = view.findViewById(R.id.prototypeCalendar)
             headerText = view.findViewById(R.id.calendarHeader)
@@ -268,42 +234,34 @@ class MainActivity : AppCompatActivity() {
 
             prevButton.setOnClickListener {
                 if (currentMonth == 0) {
-                    currentMonth = 11
-                    currentYear--
-                } else {
-                    currentMonth--
-                }
+                    currentMonth = 11; currentYear--
+                } else currentMonth--
                 updateCalendar()
             }
-
             nextButton.setOnClickListener {
                 if (currentMonth == 11) {
-                    currentMonth = 0
-                    currentYear++
-                } else {
-                    currentMonth++
-                }
+                    currentMonth = 0; currentYear++
+                } else currentMonth++
                 updateCalendar()
             }
-
             updateCalendar()
         }
 
-        // Timeline page (dynamic)
+        // Timeline
         if (layoutResId == R.layout.timeline) {
             val container = view.findViewById<LinearLayout>(R.id.timelineContainer)
-
             val db = DatabaseHelper(this)
             val dbCursor = db.readableDatabase.rawQuery("SELECT * FROM moods ORDER BY id DESC", null)
 
             if (dbCursor.moveToFirst()) {
                 do {
+                    val id = dbCursor.getInt(dbCursor.getColumnIndexOrThrow("id"))
                     val mood = dbCursor.getString(dbCursor.getColumnIndexOrThrow("mood"))
                     val note = dbCursor.getString(dbCursor.getColumnIndexOrThrow("note"))
                     val date = dbCursor.getString(dbCursor.getColumnIndexOrThrow("date"))
 
                     val entryLayout = LinearLayout(this).apply {
-                        orientation = LinearLayout.HORIZONTAL
+                        orientation = LinearLayout.VERTICAL
                         setBackgroundResource(R.drawable.timeline_entry_bg)
                         setPadding(12, 12, 12, 12)
                         val params = LinearLayout.LayoutParams(
@@ -312,6 +270,10 @@ class MainActivity : AppCompatActivity() {
                         )
                         params.setMargins(8, 8, 8, 8)
                         layoutParams = params
+                    }
+
+                    val topRow = LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL
                         gravity = Gravity.CENTER_VERTICAL
                     }
 
@@ -321,16 +283,42 @@ class MainActivity : AppCompatActivity() {
                             setMargins(0, 0, 16, 0)
                         }
                     }
-
                     val textView = TextView(this).apply {
                         text = "${note.ifEmpty { "(No note)" }}\n$date"
                         setTextColor(Color.parseColor("#333333"))
                         textSize = 14f
                     }
 
-                    entryLayout.addView(iconView)
-                    entryLayout.addView(textView)
+                    val btnRow = LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        gravity = Gravity.END
+                    }
 
+                    val btnEdit = Button(this).apply {
+                        text = "Edit"
+                        setOnClickListener {
+                            val editIntent = Intent(this@MainActivity, ActivityEnterText::class.java)
+                            editIntent.putExtra("EDIT_MODE", true)
+                            editIntent.putExtra("MOOD_ID", id)
+                            startActivity(editIntent)
+                        }
+                    }
+
+                    val btnDelete = Button(this).apply {
+                        text = "Delete"
+                        setOnClickListener {
+                            dbHelper.deleteMood(id)
+                            switchPage(R.layout.timeline)
+                        }
+                    }
+
+                    btnRow.addView(btnEdit)
+                    btnRow.addView(btnDelete)
+                    topRow.addView(iconView)
+                    topRow.addView(textView)
+
+                    entryLayout.addView(topRow)
+                    entryLayout.addView(btnRow)
                     container.addView(entryLayout)
 
                 } while (dbCursor.moveToNext())
@@ -374,13 +362,11 @@ class MainActivity : AppCompatActivity() {
         for (i in 0 until totalCells) {
             val dayNum = i - firstDayOfWeek + 1
             val dayView = TextView(this)
-
             val layoutParams = GridLayout.LayoutParams()
             layoutParams.width = 0
             layoutParams.height = 80.dp
             layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
             dayView.layoutParams = layoutParams
-
             dayView.gravity = Gravity.CENTER
             dayView.textSize = 12f
             dayView.setTextColor(Color.parseColor("#6E2795"))
@@ -388,17 +374,32 @@ class MainActivity : AppCompatActivity() {
 
             if (dayNum in 1..daysInMonth) {
                 val dateKey = "$monthStr/${String.format("%02d", dayNum)}/$yearStr"
-                val mood = moodsByDate[dateKey]
+                val moodEntry = moodsByDate[dateKey]
+                val mood = moodEntry?.mood
 
-                dayView.text = if (mood != null) {
-                    "$dayNum\n$mood"
-                } else {
-                    dayNum.toString()
-                }
+                dayView.text = if (mood != null) "$dayNum\n$mood" else dayNum.toString()
 
-                val moodKey = mood?.lowercase(Locale.getDefault())
-                if (moodKey != null && moodColors.containsKey(moodKey)) {
-                    dayView.setBackgroundColor(moodColors[moodKey]!!)
+                if (mood != null && moodColors.keys.any { it.equals(mood, ignoreCase = true) }) {
+                    val colorKey = moodColors.keys.first { it.equals(mood, ignoreCase = true) }
+                    dayView.setBackgroundColor(moodColors[colorKey]!!)
+
+                    dayView.setOnClickListener {
+                        AlertDialog.Builder(this)
+                            .setTitle("Mood for $dateKey")
+                            .setMessage("Mood: $mood")
+                            .setPositiveButton("Edit") { _, _ ->
+                                val editIntent = Intent(this, ActivityEnterText::class.java)
+                                editIntent.putExtra("EDIT_MODE", true)
+                                editIntent.putExtra("MOOD_ID", moodEntry!!.id)
+                                startActivity(editIntent)
+                            }
+                            .setNegativeButton("Delete") { _, _ ->
+                                dbHelper.deleteMood(moodEntry!!.id)
+                                updateCalendar()
+                            }
+                            .setNeutralButton("Close", null)
+                            .show()
+                    }
                 } else {
                     dayView.setBackgroundColor(Color.parseColor("#F0F0F0"))
                 }
@@ -410,7 +411,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Add columns without losing data
     private fun checkAndMigrateDatabase() {
         val db = dbHelper.writableDatabase
         val cursor = db.rawQuery("PRAGMA table_info(moods)", null)
@@ -423,19 +423,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
         cursor.close()
-
         if (!columnExists) {
             db.execSQL("ALTER TABLE moods ADD COLUMN extra_info TEXT DEFAULT ''")
         }
     }
 
     private fun getMoodIcon(mood: String): Int {
-        return when (mood.lowercase()) {
-            "upset" -> R.drawable.upset
-            "down" -> R.drawable.down
-            "neutral" -> R.drawable.neutral
-            "coping" -> R.drawable.coping
-            "elated" -> R.drawable.elated
+        return when {
+            mood.equals("upset", ignoreCase = true) -> R.drawable.upset
+            mood.equals("down", ignoreCase = true) -> R.drawable.down
+            mood.equals("neutral", ignoreCase = true) -> R.drawable.neutral
+            mood.equals("coping", ignoreCase = true) -> R.drawable.coping
+            mood.equals("elated", ignoreCase = true) -> R.drawable.elated
             else -> R.drawable.neutral
         }
     }
