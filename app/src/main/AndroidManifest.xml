@@ -26,6 +26,9 @@
         <!-- New CalendarActivity -->
         <activity android:name=".CalendarActivity" />
 
+        <!-- New ActivityEnterText -->
+        <activity android:name=".ActivityEnterText" />
+
     </application>
 
 </manifest>

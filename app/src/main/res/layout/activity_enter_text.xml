@@ -1,105 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center_vertical"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#FFFFFF">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <TextView
+        android:text="How are you feeling today?"
+        android:textSize="20sp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <GridLayout
+        android:id="@+id/moodGrid"
+        android:columnCount="5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal">
+        android:gravity="center">
 
-        <!-- Heading -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/how_are_you_doing"
-            android:textSize="24sp"
-            android:textColor="#6E2795"
-        android:fontFamily="sans-serif-medium"
-        android:layout_marginBottom="20dp" />
+        <ImageButton
+            android:id="@+id/btnUpset"
+            android:src="@drawable/upset"
+            android:background="@drawable/mood_selector_bg"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Upset" />
 
-        <!-- Mood icons -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"
-            android:layout_marginTop="8dp">
+        <ImageButton
+            android:id="@+id/btnDown"
+            android:src="@drawable/down"
+            android:background="@drawable/mood_selector_bg"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Down" />
 
-            <ImageButton
-                android:id="@+id/ic_upset"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/upset"
-                android:contentDescription="@string/upset" />
+        <ImageButton
+            android:id="@+id/btnNeutral"
+            android:src="@drawable/neutral"
+            android:background="@drawable/mood_selector_bg"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Neutral" />
 
-            <ImageButton
-                android:id="@+id/ic_down"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/down"
-                android:contentDescription="@string/down" />
+        <ImageButton
+            android:id="@+id/btnCoping"
+            android:src="@drawable/coping"
+            android:background="@drawable/mood_selector_bg"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Coping" />
 
-            <ImageButton
-                android:id="@+id/ic_neutral"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/neutral"
-                android:contentDescription="@string/neutral" />
+        <ImageButton
+            android:id="@+id/btnElated"
+            android:src="@drawable/elated"
+            android:background="@drawable/mood_selector_bg"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Elated" />
 
-            <ImageButton
-                android:id="@+id/ic_coping"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/coping"
-                android:contentDescription="@string/coping" />
+    </GridLayout>
 
-            <ImageButton
-                android:id="@+id/ic_elated"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/elated"
-                android:contentDescription="@string/elated" />
-        </LinearLayout>
+    <EditText
+        android:id="@+id/inputNote"
+        android:hint="Add a note (optional)"
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-        <!-- Notes input -->
-        <EditText
-            android:id="@+id/entry_notes"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:hint="@string/i_noticed_that"
-            android:background="@drawable/input_bg"
-            android:fontFamily="sans-serif"
-            android:textSize="16sp"
-            android:padding="16dp"
-            android:gravity="top|start"
-            android:textColor="#000000"
-            android:textColorHint="#6E2795"
-            android:layout_marginTop="16dp" />
+    <Button
+        android:id="@+id/btnSaveMood"
+        android:text="Save"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-        <!-- Submit button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/log_mood_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/submit"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="40dp"
-            app:cornerRadius="24dp"
-            android:backgroundTint="#6E2795"/>
-
-    </LinearLayout>
-</androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

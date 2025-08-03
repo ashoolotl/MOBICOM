@@ -1,6 +1,7 @@
 package com.mobicom.s17.mco2
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
@@ -50,11 +51,16 @@ class MainActivity : AppCompatActivity() {
         val btnLogin: ImageButton = findViewById(R.id.btn_login)
         val btnPost: ImageButton = findViewById(R.id.btn_post)
 
-        // Default page
-        switchPage(R.layout.activity_login)
+        // Default page or refresh after saving a mood
+        if (intent.getBooleanExtra("REFRESH_DATA", false)) {
+            switchPage(R.layout.timeline)
+        } else {
+            switchPage(R.layout.activity_login)
+        }
 
         btnPost.setOnClickListener {
-            switchPage(R.layout.activity_enter_text)
+            val intent = Intent(this, ActivityEnterText::class.java)
+            startActivity(intent)
         }
         btnCalendar.setOnClickListener {
             switchPage(R.layout.calendar)
@@ -265,6 +271,62 @@ class MainActivity : AppCompatActivity() {
 
             updateCalendar()
         }
+
+        // Timeline page (dynamic)
+        if (layoutResId == R.layout.timeline) {
+            val container = view.findViewById<LinearLayout>(R.id.timelineContainer)
+
+            val db = DatabaseHelper(this)
+            val dbCursor = db.readableDatabase.rawQuery("SELECT * FROM moods ORDER BY id DESC", null)
+
+            if (dbCursor.moveToFirst()) {
+                do {
+                    val mood = dbCursor.getString(dbCursor.getColumnIndexOrThrow("mood"))
+                    val note = dbCursor.getString(dbCursor.getColumnIndexOrThrow("note"))
+                    val date = dbCursor.getString(dbCursor.getColumnIndexOrThrow("date"))
+
+                    val entryLayout = LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        setBackgroundResource(R.drawable.timeline_entry_bg)
+                        setPadding(12, 12, 12, 12)
+                        val params = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                        params.setMargins(8, 8, 8, 8)
+                        layoutParams = params
+                        gravity = Gravity.CENTER_VERTICAL
+                    }
+
+                    val iconView = ImageView(this).apply {
+                        setImageResource(getMoodIcon(mood))
+                        layoutParams = LinearLayout.LayoutParams(60.dp, 60.dp).apply {
+                            setMargins(0, 0, 16, 0)
+                        }
+                    }
+
+                    val textView = TextView(this).apply {
+                        text = "${note.ifEmpty { "(No note)" }}\n$date"
+                        setTextColor(Color.parseColor("#333333"))
+                        textSize = 14f
+                    }
+
+                    entryLayout.addView(iconView)
+                    entryLayout.addView(textView)
+
+                    container.addView(entryLayout)
+
+                } while (dbCursor.moveToNext())
+            } else {
+                val emptyView = TextView(this).apply {
+                    text = "No moods logged yet."
+                    textSize = 16f
+                    gravity = Gravity.CENTER
+                }
+                container.addView(emptyView)
+            }
+            dbCursor.close()
+        }
     }
 
     private fun updateCalendar() {
@@ -287,7 +349,7 @@ class MainActivity : AppCompatActivity() {
             "upset" to Color.GRAY,
             "down" to Color.BLUE,
             "neutral" to Color.GREEN,
-            "coping" to Color.rgb(255, 165, 0), // Orange
+            "coping" to Color.rgb(255, 165, 0),
             "elated" to Color.RED
         )
 
@@ -331,7 +393,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Checks if new columns need to be added without dropping the table
+    // Add columns without losing data
     private fun checkAndMigrateDatabase() {
         val db = dbHelper.writableDatabase
         val cursor = db.rawQuery("PRAGMA table_info(moods)", null)
@@ -347,6 +409,17 @@ class MainActivity : AppCompatActivity() {
 
         if (!columnExists) {
             db.execSQL("ALTER TABLE moods ADD COLUMN extra_info TEXT DEFAULT ''")
+        }
+    }
+
+    private fun getMoodIcon(mood: String): Int {
+        return when (mood.lowercase()) {
+            "upset" -> R.drawable.upset
+            "down" -> R.drawable.down
+            "neutral" -> R.drawable.neutral
+            "coping" -> R.drawable.coping
+            "elated" -> R.drawable.elated
+            else -> R.drawable.neutral
         }
     }
 
