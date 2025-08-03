@@ -76,54 +76,41 @@ class ActivityEnterText : AppCompatActivity() {
             val date = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
 
             if (editId != null) {
-                // --- UPDATE EXISTING MOOD ---
-                val updated: Boolean = dbHelper.updateMood(editId!!, selectedMood!!, note)
-                if (updated) {
-                    Toast.makeText(this, "Mood updated!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "Error updating mood!", Toast.LENGTH_SHORT).show()
-                }
+                val updated = dbHelper.updateMood(editId!!, selectedMood!!, note)
+                Toast.makeText(this, if (updated) "Mood updated!" else "Error updating mood!", Toast.LENGTH_SHORT).show()
             } else {
-                // --- INSERT NEW MOOD ---
-                val inserted: Boolean = dbHelper.insertMood(selectedMood!!, note, date)
-                if (inserted) {
-                    Toast.makeText(this, "Mood saved!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "Error saving mood!", Toast.LENGTH_SHORT).show()
-                }
+                val inserted = dbHelper.insertMood(selectedMood!!, note, date)
+                Toast.makeText(this, if (inserted) "Mood saved!" else "Error saving mood!", Toast.LENGTH_SHORT).show()
             }
 
-            // Go back to timeline and refresh
-            val intent = Intent(this, MainActivity::class.java)
-            intent.putExtra("REFRESH_DATA", true)
-            startActivity(intent)
+            setResult(RESULT_OK)
             finish()
         }
 
-        // Navbar button listeners
-        btnPost.setOnClickListener { /* Already here */ }
+        // Navbar button listeners -> just return to MainActivity
+        btnPost.setOnClickListener {
+            setResult(RESULT_OK)
+            finish()
+        }
 
         btnCalendar.setOnClickListener {
-            switchPage(R.layout.calendar)
+            setResult(RESULT_OK)
+            finish()
         }
 
         btnSummary.setOnClickListener {
-            switchPage(R.layout.summary)
+            setResult(RESULT_OK)
+            finish()
         }
 
         btnTimeline.setOnClickListener {
-            switchPage(R.layout.timeline)
+            setResult(RESULT_OK)
+            finish()
         }
 
         btnLogin.setOnClickListener {
-            switchPage(R.layout.activity_login)
+            setResult(RESULT_OK)
+            finish()
         }
-    }
-
-    private fun switchPage(layout: Int) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("SWITCH_PAGE", layout)
-        startActivity(intent)
-        finish()
     }
 }
