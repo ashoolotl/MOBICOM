@@ -13,7 +13,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val DATABASE_NAME = "VibeMate.db"
         private const val DATABASE_VERSION = 2
 
-        // Table name and columns for users
         private const val TABLE_USERS = "users"
         private const val COL_ID = "id"
         private const val COL_NAME = "name"
@@ -21,13 +20,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val COL_EMAIL = "email"
         private const val COL_PASSWORD = "password"
 
-        // Table name for moods
         private const val TABLE_MOODS = "moods"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        // Create users table
-        val createUsersTable = ("CREATE TABLE IF NOT EXISTS $TABLE_USERS ("
+        val createUsersTable = ("CREATE TABLE $TABLE_USERS ("
                 + "$COL_ID INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "$COL_NAME TEXT, "
                 + "$COL_BIRTHDAY TEXT, "
@@ -35,8 +32,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 + "$COL_PASSWORD TEXT)")
         db.execSQL(createUsersTable)
 
-        // Create moods table
-        val createMoodsTable = ("CREATE TABLE IF NOT EXISTS $TABLE_MOODS ("
+        val createMoodsTable = ("CREATE TABLE $TABLE_MOODS ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "mood TEXT, "
                 + "note TEXT, "
@@ -45,19 +41,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Migrate without deleting data
-        if (oldVersion < 2) {
-            // If you add new columns in the future, add them here
-            // Example:
-            // db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN phone TEXT")
-        }
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_USERS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_MOODS")
+        onCreate(db)
     }
 
     // Insert user
     fun insertUser(name: String, birthday: String, email: String, password: String): Boolean {
         val db = writableDatabase
-
-        // Check if email already exists
         val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS WHERE $COL_EMAIL = ?", arrayOf(email))
         if (cursor.count > 0) {
             cursor.close()
@@ -83,7 +74,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             "SELECT * FROM $TABLE_USERS WHERE $COL_EMAIL = ? AND $COL_PASSWORD = ?",
             arrayOf(email, password)
         )
-
         val exists = cursor.count > 0
         cursor.close()
         return exists
@@ -99,14 +89,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             val name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME))
             val birthday = cursor.getString(cursor.getColumnIndexOrThrow(COL_BIRTHDAY))
             val userEmail = cursor.getString(cursor.getColumnIndexOrThrow(COL_EMAIL))
-
             user = User(name, birthday, userEmail)
         }
         cursor.close()
         return user
     }
 
-    // Update user
     fun updateUser(name: String, birthday: String, email: String): Boolean {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -117,28 +105,22 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return result > 0
     }
 
-    // Calculate age from birthday
     fun calculateAge(birthday: String): Int {
         return try {
             val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
             val dob = sdf.parse(birthday)
             val today = Calendar.getInstance()
-
             val dobCal = Calendar.getInstance()
             dobCal.time = dob!!
-
             var age = today.get(Calendar.YEAR) - dobCal.get(Calendar.YEAR)
-
-            if (today.get(Calendar.DAY_OF_YEAR) < dobCal.get(Calendar.DAY_OF_YEAR)) {
-                age--
-            }
+            if (today.get(Calendar.DAY_OF_YEAR) < dobCal.get(Calendar.DAY_OF_YEAR)) age--
             age
         } catch (e: Exception) {
             0
         }
     }
 
-    // Insert mood entry
+    // Mood handling
     fun insertMood(mood: String, note: String, date: String): Boolean {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -150,34 +132,25 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return result != -1L
     }
 
-    // Get mood counts for BarChart (only non-zero)
     fun getMoodCounts(): Map<String, Int> {
         val db = readableDatabase
         val moodCounts = mutableMapOf<String, Int>()
-
         val cursor = db.rawQuery("SELECT mood, COUNT(*) as count FROM $TABLE_MOODS GROUP BY mood", null)
 
         if (cursor.moveToFirst()) {
             do {
                 val mood = cursor.getString(cursor.getColumnIndexOrThrow("mood"))
                 val count = cursor.getInt(cursor.getColumnIndexOrThrow("count"))
-
-                // Only add if count > 0
-                if (count > 0) {
-                    moodCounts[mood] = count
-                }
+                if (count > 0) moodCounts[mood] = count
             } while (cursor.moveToNext())
         }
         cursor.close()
-
         return moodCounts
     }
 
-    // Fetch moods by date (useful for calendar)
     fun getMoodsByDate(): Map<String, String> {
         val db = readableDatabase
         val moodsByDate = mutableMapOf<String, String>()
-
         val cursor = db.rawQuery("SELECT date, mood FROM $TABLE_MOODS", null)
         if (cursor.moveToFirst()) {
             do {
@@ -187,14 +160,58 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             } while (cursor.moveToNext())
         }
         cursor.close()
-
         return moodsByDate
+    }
+
+    // Update mood by date
+    fun updateMoodByDate(date: String, mood: String, note: String): Boolean {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("mood", mood)
+            put("note", note)
+        }
+        val result = db.update(TABLE_MOODS, values, "date = ?", arrayOf(date))
+        return result > 0
+    }
+
+    // Delete mood by date
+    fun deleteMoodByDate(date: String): Boolean {
+        val db = writableDatabase
+        val result = db.delete(TABLE_MOODS, "date = ?", arrayOf(date))
+        return result > 0
+    }
+
+
+    // Get all moods for timeline
+    fun getAllMoods(): List<MoodEntry> {
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_MOODS ORDER BY date DESC", null)
+        val moods = mutableListOf<MoodEntry>()
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val mood = cursor.getString(cursor.getColumnIndexOrThrow("mood"))
+                val note = cursor.getString(cursor.getColumnIndexOrThrow("note"))
+                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                moods.add(MoodEntry(id, mood, note, date))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return moods
     }
 }
 
-// User data class
 data class User(
     val name: String,
     val birthday: String,
     val email: String
+)
+
+
+data class MoodEntry(
+    val id: Int,
+    val mood: String,
+    val note: String,
+    val date: String
 )
