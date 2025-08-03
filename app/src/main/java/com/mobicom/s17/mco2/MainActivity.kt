@@ -4,15 +4,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.GridLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.app.DatePickerDialog
 import android.widget.EditText
 import android.widget.Toast
+import android.graphics.Color
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,12 +27,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var inflater: LayoutInflater
     private var currentUserEmail: String? = null  // Track the logged-in user
 
+    // Calendar-related variables
+    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var calendarGrid: GridLayout
+    private lateinit var headerText: TextView
+    private lateinit var prevButton: Button
+    private lateinit var nextButton: Button
+    private var currentMonth: Int = 0
+    private var currentYear: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         frame = findViewById(R.id.main_content_frame)
         inflater = LayoutInflater.from(this)
+        dbHelper = DatabaseHelper(this)
 
         val btnCalendar: ImageButton = findViewById(R.id.btn_calendar)
         val btnSummary: ImageButton = findViewById(R.id.btn_summary)
@@ -40,10 +57,9 @@ class MainActivity : AppCompatActivity() {
             switchPage(R.layout.activity_enter_text)
         }
 
-        // Open CalendarActivity instead of inflating XML
+        // Switch to calendar view in the main frame
         btnCalendar.setOnClickListener {
-            val intent = Intent(this, CalendarActivity::class.java)
-            startActivity(intent)
+            switchPage(R.layout.calendar)
         }
 
         btnSummary.setOnClickListener {
@@ -214,5 +230,110 @@ class MainActivity : AppCompatActivity() {
                 btnCancelEdit.visibility = View.GONE
             }
         }
+
+        // Calendar page
+        if (layoutResId == R.layout.calendar) {
+            calendarGrid = view.findViewById(R.id.prototypeCalendar)
+            headerText = view.findViewById(R.id.calendarHeader)
+            prevButton = view.findViewById(R.id.btn_prev_month)
+            nextButton = view.findViewById(R.id.btn_next_month)
+
+            // Initialize calendar to current month
+            val cal = Calendar.getInstance()
+            currentMonth = cal.get(Calendar.MONTH)
+            currentYear = cal.get(Calendar.YEAR)
+
+            // Set up navigation buttons
+            prevButton.setOnClickListener {
+                if (currentMonth == 0) {
+                    currentMonth = 11
+                    currentYear--
+                } else {
+                    currentMonth--
+                }
+                updateCalendar()
+            }
+
+            nextButton.setOnClickListener {
+                if (currentMonth == 11) {
+                    currentMonth = 0
+                    currentYear++
+                } else {
+                    currentMonth++
+                }
+                updateCalendar()
+            }
+
+            updateCalendar()
+        }
     }
+
+    private fun updateCalendar() {
+        // Update header
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.MONTH, currentMonth)
+        cal.set(Calendar.YEAR, currentYear)
+        val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        headerText.text = sdf.format(cal.time)
+
+        // Clear previous views
+        calendarGrid.removeAllViews()
+
+        // Get first day of month and number of days
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        val firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sun
+        val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        // Fetch moods by date
+        val moodsByDate = dbHelper.getMoodsByDate()
+        val monthStr = String.format("%02d", currentMonth + 1)
+        val yearStr = currentYear.toString()
+
+        // Fill grid
+        val totalCells = 42 // 7x6
+        for (i in 0 until totalCells) {
+            val dayNum = i - firstDayOfWeek + 1
+            val dayView = TextView(this)
+
+            // Use GridLayout.LayoutParams to properly distribute cells
+            val layoutParams = GridLayout.LayoutParams()
+            layoutParams.width = 0
+            layoutParams.height = 80.dp // Increased height to accommodate mood text
+            layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+            dayView.layoutParams = layoutParams
+
+            dayView.gravity = Gravity.CENTER
+            dayView.textSize = 12f // Smaller text to fit both day and mood
+            dayView.setTextColor(Color.parseColor("#6E2795"))
+            dayView.setPadding(4, 4, 4, 4)
+
+            if (dayNum in 1..daysInMonth) {
+                val dateKey = "$monthStr/${String.format("%02d", dayNum)}/$yearStr"
+                val mood = moodsByDate[dateKey]
+
+                // Set text to show both day number and mood (if any)
+                dayView.text = if (mood != null) {
+                    "$dayNum\n$mood"
+                } else {
+                    dayNum.toString()
+                }
+
+                // Set background color based on mood
+                when (mood) {
+                    "happy" -> dayView.setBackgroundColor(Color.parseColor("#FFD700"))
+                    "sad" -> dayView.setBackgroundColor(Color.parseColor("#1E90FF"))
+                    "angry" -> dayView.setBackgroundColor(Color.parseColor("#FF4500"))
+                    "calm" -> dayView.setBackgroundColor(Color.parseColor("#90EE90"))
+                    else -> dayView.setBackgroundColor(Color.parseColor("#F0F0F0"))
+                }
+            } else {
+                dayView.text = ""
+                dayView.setBackgroundColor(Color.TRANSPARENT)
+            }
+            calendarGrid.addView(dayView)
+        }
+    }
+
+    // Extension property for dp to px
+    private val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
 }

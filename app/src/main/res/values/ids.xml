@@ -3,4 +3,6 @@
     <item name="view_pager" type="id" />
     <item name="tabs" type="id" />
     <item name="add_entry_button" type="id" />
+    <item name="btn_prev_month" type="id" />
+    <item name="btn_next_month" type="id" />
 </resources>
