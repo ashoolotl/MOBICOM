@@ -108,20 +108,21 @@
             android:id="@+id/regNameInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name"
+            android:hint="Full Name"
             android:background="@drawable/input_bg"
             android:padding="12dp"
             android:layout_marginBottom="12dp"
             android:textColor="#000000"
             android:textColorHint="#6E2795" />
 
-        <!-- Age field -->
+        <!-- Birthday (Click to open DatePicker) -->
         <EditText
-            android:id="@+id/regAgeInput"
+            android:id="@+id/regBirthdayInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Age"
-            android:inputType="number"
+            android:hint="Birthday (MM/DD/YYYY)"
+            android:focusable="false"
+            android:clickable="true"
             android:background="@drawable/input_bg"
             android:padding="12dp"
             android:layout_marginBottom="12dp"

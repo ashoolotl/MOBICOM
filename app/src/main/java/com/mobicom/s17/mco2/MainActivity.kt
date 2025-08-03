@@ -8,6 +8,10 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import android.app.DatePickerDialog
+import android.widget.EditText
+import java.util.Calendar
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -62,6 +66,22 @@ class MainActivity : AppCompatActivity() {
             val btnShowRegister = view.findViewById<Button>(R.id.btnShowRegister)
             val btnRegister = view.findViewById<Button>(R.id.registerButton)
             val btnBackToLogin = view.findViewById<Button>(R.id.btnBackToLogin)
+
+            // Birthday input '
+            val birthdayInput = view.findViewById<EditText>(R.id.regBirthdayInput)
+            birthdayInput.setOnClickListener {
+                val calendar = Calendar.getInstance()
+                val year = calendar.get(Calendar.YEAR)
+                val month = calendar.get(Calendar.MONTH)
+                val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                val datePicker = DatePickerDialog(this, { _, y, m, d ->
+                    val formattedDate = "${m + 1}/$d/$y"
+                    birthdayInput.setText(formattedDate)
+                }, year, month, day)
+
+                datePicker.show()
+            }
 
             // Login button -> Timeline
             btnLogin.setOnClickListener {
