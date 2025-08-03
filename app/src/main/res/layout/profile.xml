@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="My Profile"
+        android:textColor="#6E2795"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"
+        android:gravity="center" />
+
+    <!-- Name -->
+    <EditText
+        android:id="@+id/profileName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:background="@drawable/input_bg"
+        android:padding="12dp"
+        android:layout_marginBottom="12dp"
+        android:textColor="#000000"
+        android:textColorHint="#6E2795"
+        android:hint="Name" />
+
+    <!-- Birthday -->
+    <EditText
+        android:id="@+id/profileBirthday"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:background="@drawable/input_bg"
+        android:padding="12dp"
+        android:layout_marginBottom="12dp"
+        android:textColor="#000000"
+        android:textColorHint="#6E2795"
+        android:hint="Birthday" />
+
+    <!-- Age -->
+    <EditText
+        android:id="@+id/profileAge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:background="@drawable/input_bg"
+        android:padding="12dp"
+        android:layout_marginBottom="12dp"
+        android:textColor="#000000"
+        android:textColorHint="#6E2795"
+        android:hint="Age" />
+
+    <!-- Email -->
+    <EditText
+        android:id="@+id/profileEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:background="@drawable/input_bg"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp"
+        android:textColor="#000000"
+        android:textColorHint="#6E2795"
+        android:hint="Email" />
+
+    <!-- Edit Profile Button -->
+    <Button
+        android:id="@+id/btnEditProfile"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Edit Profile"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="12dp"
+        android:padding="12dp"
+        android:background="@drawable/rounded_button" />
+
+    <!-- Cancel Button (Initially hidden) -->
+    <Button
+        android:id="@+id/btnCancelEdit"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:visibility="gone"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="8dp"
+        android:padding="12dp"
+        android:background="@drawable/rounded_button" />
+</LinearLayout>
