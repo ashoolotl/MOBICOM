@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var frame: FrameLayout
     private lateinit var inflater: LayoutInflater
     private var currentUserEmail: String? = null
+    private lateinit var bottomNavBar: LinearLayout
 
     // Calendar variables
     private lateinit var dbHelper: DatabaseHelper
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         frame = findViewById(R.id.main_content_frame)
         inflater = LayoutInflater.from(this)
         dbHelper = DatabaseHelper(this)
+        bottomNavBar = findViewById(R.id.bottom_navigation_bar)
 
         checkAndMigrateDatabase()
 
@@ -77,6 +79,13 @@ class MainActivity : AppCompatActivity() {
         frame.removeAllViews()
         val view = inflater.inflate(layoutResId, frame, false)
         frame.addView(view)
+
+        // Hide bottom navigation bar when login screen is active, show it for all other screens
+        if (layoutResId == R.layout.activity_login) {
+            bottomNavBar.visibility = View.GONE
+        } else {
+            bottomNavBar.visibility = View.VISIBLE
+        }
 
         val dbHelper = DatabaseHelper(this)
 
